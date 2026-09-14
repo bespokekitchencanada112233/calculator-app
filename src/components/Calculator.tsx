@@ -17,6 +17,7 @@ function formatNum(n: number): string {
 export default function Calculator() {
   const [a, setA] = useState("");
   const [b, setB] = useState("");
+  const [c, setC] = useState("");
   const [operation, setOperation] = useState<Operation>("sum");
   const [result, setResult] = useState<number | null>(null);
   const [error, setError] = useState("");
@@ -38,13 +39,14 @@ export default function Calculator() {
 
     const rawA = a.trim();
     const rawB = b.trim();
+    const rawC = c.trim();
 
-    if (rawA === "" || rawB === "") {
+    if (rawA === "" || rawB === "" || rawC === "") {
       setResult(null);
       setError("");
       return;
     }
-    if (isNaN(Number(rawA)) || isNaN(Number(rawB))) {
+    if (isNaN(Number(rawA)) || isNaN(Number(rawB)) || isNaN(Number(rawC))) {
       setResult(null);
       setError("Enter valid numbers.");
       return;
@@ -55,6 +57,7 @@ export default function Calculator() {
       const { data, error } = await supabase.rpc("calculate", {
         input_a: Number(rawA),
         input_b: Number(rawB),
+        input_c: Number(rawC),
       });
       if (error) {
         setError(error.message);
@@ -74,7 +77,7 @@ export default function Calculator() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [a, b]);
+  }, [a, b, c]);
 
   return (
     <div className="case">
@@ -100,6 +103,18 @@ export default function Calculator() {
           aria-label="Second number"
           value={b}
           onChange={(e) => setB(e.target.value)}
+        />
+      </div>
+      <div className="row">
+        <span className="slot-label" aria-hidden="true">c</span>
+        <input
+          className="slot"
+          type="number"
+          inputMode="decimal"
+          placeholder="0"
+          aria-label="Third number"
+          value={c}
+          onChange={(e) => setC(e.target.value)}
         />
       </div>
       <div className="divider" />

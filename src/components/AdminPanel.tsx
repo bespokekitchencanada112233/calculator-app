@@ -85,7 +85,7 @@ export default function AdminPanel() {
           )}
           {history.map((row) => (
             <li key={row.id} className="history-row">
-              <span className="history-expr">{formatNum(row.a)} {opSymbol(row.operation)} {formatNum(row.b)}</span>
+              <span className="history-expr">{exprFor(row)}</span>
               <span>{formatNum(row.result)}</span>
               <span className="history-expr">{new Date(row.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
             </li>
@@ -96,11 +96,12 @@ export default function AdminPanel() {
   );
 }
 
-function opSymbol(op: Operation): string {
-  switch (op) {
-    case "sum": return "+";
-    case "subtract": return "−";
-    case "multiply": return "×";
-    case "average": return "avg";
+function exprFor(row: CalculationRow): string {
+  const [a, b, c] = [formatNum(row.a), formatNum(row.b), formatNum(row.c)];
+  switch (row.operation) {
+    case "sum": return `${a} + ${b} + ${c}`;
+    case "subtract": return `${a} − ${b} − ${c}`;
+    case "multiply": return `${a} × ${b} × ${c}`;
+    case "average": return `avg(${a}, ${b}, ${c})`;
   }
 }

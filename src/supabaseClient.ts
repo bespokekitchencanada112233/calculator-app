@@ -18,6 +18,7 @@ export type CalculationRow = {
   user_id: string | null;
   a: number;
   b: number;
+  c: number;
   operation: Operation;
   result: number;
   created_at: string;
