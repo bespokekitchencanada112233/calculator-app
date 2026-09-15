@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase, type Operation } from "../supabaseClient";
+import {
+  computeLocally,
+  enqueuePending,
+  flushPendingQueue,
+  getCachedOperation,
+  getPendingCount,
+  setCachedOperation,
+} from "../offlineSync";
 
 const OPERATION_LABEL: Record<Operation, string> = {
   sum: "sum",
@@ -18,9 +26,11 @@ export default function Calculator() {
   const [a, setA] = useState("");
   const [b, setB] = useState("");
   const [c, setC] = useState("");
-  const [operation, setOperation] = useState<Operation>("sum");
+  const [operation, setOperation] = useState<Operation>(getCachedOperation() ?? "sum");
   const [result, setResult] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [pendingCount, setPendingCount] = useState(getPendingCount());
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -30,8 +40,29 @@ export default function Calculator() {
       .eq("id", 1)
       .single()
       .then(({ data }) => {
-        if (data) setOperation(data.operation as Operation);
+        if (data) {
+          setOperation(data.operation as Operation);
+          setCachedOperation(data.operation as Operation);
+        }
       });
+  }, []);
+
+  useEffect(() => {
+    async function handleOnline() {
+      setIsOffline(false);
+      const { remaining } = await flushPendingQueue();
+      setPendingCount(remaining);
+    }
+    function handleOffline() {
+      setIsOffline(true);
+    }
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    if (navigator.onLine) handleOnline();
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   useEffect(() => {
@@ -53,15 +84,37 @@ export default function Calculator() {
     }
 
     setError("");
+    const numA = Number(rawA);
+    const numB = Number(rawB);
+    const numC = Number(rawC);
+
     debounceRef.current = setTimeout(async () => {
+      if (!navigator.onLine) {
+        const local = computeLocally(operation, numA, numB, numC);
+        setResult(local);
+        enqueuePending({
+          a: numA, b: numB, c: numC,
+          operation, result: local,
+          created_at: new Date().toISOString(),
+        });
+        setPendingCount(getPendingCount());
+        return;
+      }
+
       const { data, error } = await supabase.rpc("calculate", {
-        input_a: Number(rawA),
-        input_b: Number(rawB),
-        input_c: Number(rawC),
+        input_a: numA,
+        input_b: numB,
+        input_c: numC,
       });
       if (error) {
-        setError(error.message);
-        setResult(null);
+        const local = computeLocally(operation, numA, numB, numC);
+        setResult(local);
+        enqueuePending({
+          a: numA, b: numB, c: numC,
+          operation, result: local,
+          created_at: new Date().toISOString(),
+        });
+        setPendingCount(getPendingCount());
         return;
       }
       setResult(data as number);
@@ -71,16 +124,24 @@ export default function Calculator() {
         .select("operation")
         .eq("id", 1)
         .single();
-      if (settings) setOperation(settings.operation as Operation);
+      if (settings) {
+        setOperation(settings.operation as Operation);
+        setCachedOperation(settings.operation as Operation);
+      }
     }, 400);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [a, b, c]);
+  }, [a, b, c, operation]);
 
   return (
     <div className="case">
+      {(isOffline || pendingCount > 0) && (
+        <div className="offline-banner">
+          {isOffline ? "Offline — using last known operation" : `Syncing ${pendingCount} calculation${pendingCount === 1 ? "" : "s"}…`}
+        </div>
+      )}
       <div className="row">
         <span className="slot-label" aria-hidden="true">a</span>
         <input
