@@ -49,7 +49,9 @@
     "publish": {
       "provider": "github",
       "owner": "bespokekitchencanada112233",
-      "repo": "calculator-app"
+      "repo": "calculator-app",
+      "draft": false,
+      "prerelease": false
     }
   }
 }
