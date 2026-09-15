@@ -143,37 +143,37 @@ export default function Calculator() {
         </div>
       )}
       <div className="row">
-        <span className="slot-label" aria-hidden="true">a</span>
+        <span className="slot-label" aria-hidden="true">Input a</span>
         <input
           className="slot"
           type="number"
           inputMode="decimal"
           placeholder="0"
-          aria-label="First number"
+          aria-label="Input a"
           value={a}
           onChange={(e) => setA(e.target.value)}
         />
       </div>
       <div className="row">
-        <span className="slot-label" aria-hidden="true">b</span>
+        <span className="slot-label" aria-hidden="true">Input b</span>
         <input
           className="slot"
           type="number"
           inputMode="decimal"
           placeholder="0"
-          aria-label="Second number"
+          aria-label="Input b"
           value={b}
           onChange={(e) => setB(e.target.value)}
         />
       </div>
       <div className="row">
-        <span className="slot-label" aria-hidden="true">c</span>
+        <span className="slot-label" aria-hidden="true">Input c</span>
         <input
           className="slot"
           type="number"
           inputMode="decimal"
           placeholder="0"
-          aria-label="Third number"
+          aria-label="Input c"
           value={c}
           onChange={(e) => setC(e.target.value)}
         />

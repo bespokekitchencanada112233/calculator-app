@@ -93,11 +93,11 @@ body {
 
 .slot-label {
   font-family: "IBM Plex Mono", monospace;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--label);
-  width: 16px;
+  width: 60px;
   flex: none;
-  text-align: center;
+  text-align: left;
 }
 
 input.slot {
