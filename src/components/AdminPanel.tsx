@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase, type CalculationRow, type Operation } from "../supabaseClient";
 
 const OPERATIONS: { value: Operation; label: string }[] = [
-  { value: "sum", label: "Sum (a + b)" },
+  { value: "sum", label: "Sum (a + b + c)" },
   { value: "average", label: "Average" },
-  { value: "subtract", label: "Subtract (a − b)" },
+  { value: "subtract", label: "Subtract (a − b − c)" },
   { value: "multiply", label: "Multiply" },
 ];
 
